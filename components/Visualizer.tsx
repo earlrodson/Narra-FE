@@ -1,16 +1,18 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { TrackReference } from "@livekit/components-react";
+import { AgentState, TrackReference } from "@livekit/components-react";
 
 interface VisualizerProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state?: any; // Optional, replace with a specific type if known
+  state: AgentState;
   trackRef: TrackReference | undefined;
   isAnimating: boolean;
 }
 
-
-const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
+const Visualizer: React.FC<VisualizerProps> = ({
+  state,
+  trackRef,
+  isAnimating,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -97,7 +99,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
           cx="175"
           cy="175"
           r={isAnimating ? 165 : 155}
-          stroke={"rgba(221, 221, 221, 0.5)"}
+          stroke={"#FCF5F0"}
           strokeWidth="17"
           fill="none"
           strokeDasharray={getCircumference(isAnimating ? 165 : 155)}
@@ -118,11 +120,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
           cx="175"
           cy="175"
           r={isAnimating ? 135 : 125}
-          stroke={
-            scaleFactor > 1.4 && isAnimating
-              ? "rgba(255, 165, 0, 0.5)"
-              : "rgba(221, 221, 221, 0.5)"
-          }
+          stroke={scaleFactor > 1.4 && isAnimating ? "#A7E7B9" : "#FCF5F0"}
           strokeWidth="17"
           fill="none"
           strokeDasharray={getCircumference(isAnimating ? 135 : 125)}
@@ -143,11 +141,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
           cx="175"
           cy="175"
           r={isAnimating ? 105 : 95}
-          stroke={
-            scaleFactor > 1.4 && isAnimating
-              ? "rgba(255, 165, 0, 0.5)"
-              : "rgba(221, 221, 221, 0.5)"
-          }
+          stroke={scaleFactor > 1.4 && isAnimating ? "#A7E7B9" : "#FCF5F0"}
           strokeWidth="17"
           fill="none"
           strokeDasharray={getCircumference(isAnimating ? 105 : 95)}
@@ -168,11 +162,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
           cx="175"
           cy="175"
           r={isAnimating ? 75 : 65}
-          stroke={
-            scaleFactor > 1.4 && isAnimating
-              ? "rgba(255, 165, 0, 0.5)"
-              : "rgba(221, 221, 221, 0.5)"
-          }
+          stroke={scaleFactor > 1.4 && isAnimating ? "#A7E7B9" : "#FCF5F0"}
           strokeWidth="17"
           fill="none"
           strokeDasharray={getCircumference(isAnimating ? 75 : 65)}
@@ -187,7 +177,9 @@ const Visualizer: React.FC<VisualizerProps> = ({ trackRef, isAnimating }) => {
       <div
         className={`flex flex-col justify-center rounded-full ${
           scaleFactor === 1 && "transition-all duration-1000 delay-300"
-        } absolute z-10 bg-gradient-to-t from-orange-400 via-orange-500 to-yellow-500`}
+        } ${
+          state === "listening" && "animate-heartbeat"
+        } absolute z-10 bg-gradient-to-t from-[#16A34A] max-h-[105px] max-w-[105px] via-[#A7E7B9] to-[#FCF5F0]`}
         style={{
           width: `${isAnimating ? 80 * scaleFactor : "0"}px`,
           height: `${isAnimating ? 80 * scaleFactor : "0"}px`,
