@@ -161,6 +161,35 @@ function ControlBar(props: {
 		}
 	}, []);
 
+	const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
+		try {
+			const currentDate = new Date();
+			const formattedDate = currentDate.toISOString().split('.')[0]; 
+			const response = await fetch('http://localhost:8000/transcript/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					"userRoomId": "room123",
+					"chapterId": 1,
+					"transcript": JSON.stringify(roomTranscript),
+					"accountId": 42,
+					"timestamp": formattedDate
+				}),
+			});
+			
+			
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+      // Handle the story as needed
+		} catch (error) {
+			console.error('Error generating story:', error);
+      setLoading(false);
+		}
+	}, []);
 
   const handleStartAConversationClicked = () => {
     props.onConnectButtonClicked();
@@ -240,6 +269,7 @@ function ControlBar(props: {
               exit={{ opacity: 0, top: "-10px" }}
               transition={{ duration: 0.4, ease: [0.09, 1.04, 0.245, 1.055] }}
               className="flex h-8 absolute left-1/2 -translate-x-1/2  justify-center"
+              onClick={() => storeTranscript(props.roomTranscript)}
             >
               <VoiceAssistantControlBar controls={{ leave: false }} />
               <DisconnectButton>
