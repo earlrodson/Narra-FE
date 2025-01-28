@@ -427,7 +427,8 @@ function TranscriptionTile({
       height: '200px',
       color: 'black',
       overflow: 'scroll' as 'scroll',
-      backgroundColor: '#ccc',
+      backgroundColor: 'rgb(241 241 241)',
+      padding: '10px',
     },
   };
 
