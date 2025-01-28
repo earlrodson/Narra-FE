@@ -222,6 +222,8 @@ function ControlBar(props: {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Generate story button hidden for now */}
       {/* <AnimatePresence>
         {props.agentState === "disconnected" && props.roomTranscript.length > 1 && (
           <motion.button
