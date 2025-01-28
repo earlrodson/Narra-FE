@@ -9,11 +9,11 @@ import {
   VoiceAssistantControlBar,
   AgentState,
   DisconnectButton,
-	TrackReference,
-	useTrackTranscription,
-	TrackReferenceOrPlaceholder,
-	useLocalParticipant,
-	useChat,
+  TrackReference,
+  useTrackTranscription,
+  TrackReferenceOrPlaceholder,
+  useLocalParticipant,
+  useChat,
 } from "@livekit/components-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
@@ -25,18 +25,18 @@ import Visualizer from "@/components/Visualizer";
 import { useRouter } from "next/navigation";
 
 export type ChatMessageType = {
-	name: string;
-	message: string;
-	isSelf: boolean;
-	timestamp: number;
-  };
+  name: string;
+  message: string;
+  isSelf: boolean;
+  timestamp: number;
+};
 
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
   >(undefined);
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
-	const [isAnimating, setIsAnimating] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const onConnectButtonClicked = useCallback(async () => {
     // Generate room connection details, including:
@@ -59,13 +59,13 @@ export default function Page() {
   }, []);
 
 
-	const voiceAssistantComponentProps = {
-		agentState,
-		setAgentState,
-		onConnectButtonClicked,
-		isAnimating,
-		setIsAnimating
-	}
+  const voiceAssistantComponentProps = {
+    agentState,
+    setAgentState,
+    onConnectButtonClicked,
+    isAnimating,
+    setIsAnimating
+  }
 
   return (
     <main
@@ -81,11 +81,11 @@ export default function Page() {
         onMediaDeviceFailure={onDeviceFailure}
         onDisconnected={() => {
           updateConnectionDetails(undefined);
-					setIsAnimating(false);
+          setIsAnimating(false);
         }}
         className="grid grid-rows-[2fr_1fr] items-center bg-white"
       >
-				<VoiceAssistantComponents {...voiceAssistantComponentProps}/>
+        <VoiceAssistantComponents {...voiceAssistantComponentProps} />
       </LiveKitRoom>
     </main>
   );
@@ -93,11 +93,11 @@ export default function Page() {
 
 function SimpleVoiceAssistant(props: {
   onStateChange: (state: AgentState) => void,
-	state: AgentState,
-	audioTrack: TrackReference | undefined,
-	isAnimating: boolean;
+  state: AgentState,
+  audioTrack: TrackReference | undefined,
+  isAnimating: boolean;
 }) {
-	const { state, audioTrack } = props;
+  const { state, audioTrack } = props;
   useEffect(() => {
     props.onStateChange(state);
   }, [props, state]);
@@ -115,81 +115,81 @@ function SimpleVoiceAssistant(props: {
 function ControlBar(props: {
   onConnectButtonClicked: () => void;
   agentState: AgentState;
-	roomTranscript: ChatMessageType[];
-	setIsAnimating: (isAnimating: boolean) => void;
+  roomTranscript: ChatMessageType[];
+  setIsAnimating: (isAnimating: boolean) => void;
 }) {
-	const [loading, setLoading] = useState(false);
-	const router = useRouter()
+  const [loading, setLoading] = useState(false);
+  const router = useRouter()
 
-	const generateStory = useCallback(async (roomTranscript: ChatMessageType[]) => {
-		setLoading(true);
-		try {
-			const currentDate = new Date();
-			const formattedDate = currentDate.toISOString().split('.')[0]; 
-			const response = await fetch('http://localhost:8000/generate_story/', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					"userRoomId": "room123",
-					"chapterId": 1,
-					"transcript": JSON.stringify(roomTranscript),
-					"accountId": 42,
-					"timestamp": formattedDate
-				}),
-			});
-			
-			
-			if (!response.ok) {
-				throw new Error('Network response was not ok');
-			}
-			const result = await response.json();
-			console.log(result);  // Log the detailed error message returned from FastAPI
+  const generateStory = useCallback(async (roomTranscript: ChatMessageType[]) => {
+    setLoading(true);
+    try {
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('.')[0];
+      const response = await fetch('http://localhost:8000/generate_story/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "userRoomId": "room123",
+          "chapterId": 1,
+          "transcript": JSON.stringify(roomTranscript),
+          "accountId": 42,
+          "timestamp": formattedDate
+        }),
+      });
 
-			// store in local storage
-			localStorage.setItem('storyDetails', JSON.stringify(result));
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const result = await response.json();
+      console.log(result);  // Log the detailed error message returned from FastAPI
+
+      // store in local storage
+      localStorage.setItem('storyDetails', JSON.stringify(result));
       setLoading(false);
 
-			router.push('/generate-story');
+      router.push('/generate-story');
 
-
-			// Handle the story as needed
-		} catch (error) {
-			console.error('Error generating story:', error);
-      setLoading(false);
-		}
-	}, []);
-
-	const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
-		try {
-			const currentDate = new Date();
-			const formattedDate = currentDate.toISOString().split('.')[0]; 
-			const response = await fetch('http://localhost:8000/transcript/', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					"userRoomId": "room123",
-					"chapterId": 1,
-					"transcript": JSON.stringify(roomTranscript),
-					"accountId": 42,
-					"timestamp": formattedDate
-				}),
-			});
-			
-			
-			if (!response.ok) {
-				throw new Error('Network response was not ok');
-			}
 
       // Handle the story as needed
-		} catch (error) {
-			console.error('Error generating story:', error);
+    } catch (error) {
+      console.error('Error generating story:', error);
       setLoading(false);
-		}
-	}, []);
+    }
+  }, []);
+
+  const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
+    try {
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('.')[0];
+      const response = await fetch('http://localhost:8000/transcript/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "userRoomId": "room123",
+          "chapterId": 1,
+          "transcript": JSON.stringify(roomTranscript),
+          "accountId": 42,
+          "timestamp": formattedDate
+        }),
+      });
+
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Handle the story as needed
+    } catch (error) {
+      console.error('Error generating story:', error);
+      setLoading(false);
+    }
+  }, []);
 
   const handleStartAConversationClicked = () => {
     props.onConnectButtonClicked();
@@ -293,57 +293,57 @@ function onDeviceFailure(error?: MediaDeviceFailure) {
 
 
 function VoiceAssistantComponents(props: {
-	agentState: AgentState,
-	setAgentState: (state: AgentState) => void,
-	onConnectButtonClicked: () => void,
-	isAnimating: boolean;
-	setIsAnimating: (isAnimating: boolean) => void;
+  agentState: AgentState,
+  setAgentState: (state: AgentState) => void,
+  onConnectButtonClicked: () => void,
+  isAnimating: boolean;
+  setIsAnimating: (isAnimating: boolean) => void;
 }) {
-	const { setAgentState, onConnectButtonClicked, agentState, isAnimating } = props;
-	const [roomTranscript, setRoomTranscript] = useState<ChatMessageType[]>([]); // State for messages
+  const { setAgentState, onConnectButtonClicked, agentState, isAnimating } = props;
+  const [roomTranscript, setRoomTranscript] = useState<ChatMessageType[]>([]); // State for messages
 
-	const { state, audioTrack } = useVoiceAssistant();
-	const simpleVideoAssistantProps = {
-		onStateChange: setAgentState,
-		state,
-		audioTrack,
-		isAnimating,
-	}
+  const { state, audioTrack } = useVoiceAssistant();
+  const simpleVideoAssistantProps = {
+    onStateChange: setAgentState,
+    state,
+    audioTrack,
+    isAnimating,
+  }
 
-	const chatTileContent = useMemo(() => {
+  const chatTileContent = useMemo(() => {
     if (audioTrack) {
       return (
         <TranscriptionTile
           agentAudioTrack={audioTrack}
-					setRoomTranscript={setRoomTranscript}
+          setRoomTranscript={setRoomTranscript}
         />
       );
     }
     return null;
   }, [audioTrack]);
 
-	return (
-		<>
-			<SimpleVoiceAssistant {...simpleVideoAssistantProps} />
-			<ControlBar
-          onConnectButtonClicked={onConnectButtonClicked}
-          agentState={agentState}
-					roomTranscript={roomTranscript}
-					setIsAnimating={props.setIsAnimating}
-        />
-			<RoomAudioRenderer />
-			<NoAgentNotification state={agentState} />
-			{chatTileContent}
-		</>
-	)
+  return (
+    <>
+      <SimpleVoiceAssistant {...simpleVideoAssistantProps} />
+      <ControlBar
+        onConnectButtonClicked={onConnectButtonClicked}
+        agentState={agentState}
+        roomTranscript={roomTranscript}
+        setIsAnimating={props.setIsAnimating}
+      />
+      <RoomAudioRenderer />
+      <NoAgentNotification state={agentState} />
+      {chatTileContent}
+    </>
+  )
 }
 
 function TranscriptionTile({
   agentAudioTrack,
-	setRoomTranscript,
+  setRoomTranscript,
 }: {
   agentAudioTrack: TrackReferenceOrPlaceholder;
-	setRoomTranscript: (transcript: ChatMessageType[]) => void,
+  setRoomTranscript: (transcript: ChatMessageType[]) => void,
 }) {
   const agentMessages = useTrackTranscription(agentAudioTrack);
   const localParticipant = useLocalParticipant();
@@ -383,7 +383,7 @@ function TranscriptionTile({
     );
 
     const allMessages = Array.from(transcripts.values());
-	
+
     for (const msg of chatMessages) {
       const isAgent =
         msg.from?.identity === agentAudioTrack.participant?.identity;
@@ -417,22 +417,30 @@ function TranscriptionTile({
     localMessages.segments,
   ]);
 
-	useEffect(() => {
-		// Assuming setRoomTranscript is passed from the parent
-		setRoomTranscript(messages);
-	}, [messages, setRoomTranscript]);
-	
+  useEffect(() => {
+    // Assuming setRoomTranscript is passed from the parent
+    setRoomTranscript(messages);
+  }, [messages, setRoomTranscript]);
+  const styles = {
+    container: {
+      position: 'relative' as 'relative',
+      height: '200px',
+      color: 'black',
+      overflow: 'scroll' as 'scroll',
+      backgroundColor: '#ccc',
+    },
+  };
 
   return (
-		<></>
-    // loop through messages and display them in a div
-    // <div>
-    //   {messages.map((message, index) => (
-    //     <div key={index}>
-    //       {message.name} - {message.message}
-    //     </div>
-    //   ))}
-    // </div>
+    <>
+      <div style={styles.container}>
+        {messages.map((message, index) => (
+          <div key={index}>
+            {message.name} - {message.message}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
