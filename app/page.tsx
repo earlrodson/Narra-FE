@@ -436,7 +436,7 @@ function TranscriptionTile({
       <div style={styles.container}>
         {messages.map((message, index) => (
           <div key={index}>
-            {message.name} - {message.message}
+            {message.name === 'Agent' ? 'Narra' : message.name} - {message.message}
           </div>
         ))}
       </div>
