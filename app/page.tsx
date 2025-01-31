@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   LiveKitRoom,
   useVoiceAssistant,
-  BarVisualizer,
   RoomAudioRenderer,
   VoiceAssistantControlBar,
   AgentState,
