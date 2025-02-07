@@ -115,11 +115,13 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
+  const BACKEND_API = process.env.BACKEND_URL;
+
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('.')[0];
-      const response = await fetch('http://localhost:8000/transcript/', {
+      const response = await fetch(`${BACKEND_API}/transcript/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
