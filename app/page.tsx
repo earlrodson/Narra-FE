@@ -115,7 +115,7 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
-  const BACKEND_API = process.env.BACKEND_URL;
+  const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
