@@ -25,3 +25,9 @@ pnpm dev
 python3 agent.py dev
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+> Running in dev envi
+```shell
+docker build --build-arg NODE_ENV=development -t nextjs-app .
+docker run -p 3000:3000 -v $(pwd):/app nextjs-app
+```
