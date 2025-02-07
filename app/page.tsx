@@ -1,28 +1,27 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { CloseIcon } from "@/components/CloseIcon";
+import { NoAgentNotification } from "@/components/NoAgentNotification";
+import Visualizer from "@/components/Visualizer";
 import {
-  LiveKitRoom,
-  useVoiceAssistant,
-  BarVisualizer,
-  RoomAudioRenderer,
-  VoiceAssistantControlBar,
   AgentState,
   DisconnectButton,
+  LiveKitRoom,
+  RoomAudioRenderer,
   TrackReference,
-  useTrackTranscription,
   TrackReferenceOrPlaceholder,
-  useLocalParticipant,
+  VoiceAssistantControlBar,
   useChat,
+  useLocalParticipant,
+  useTrackTranscription,
+  useVoiceAssistant
 } from "@livekit/components-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
-import type { ConnectionDetails } from "./api/connection-details/route";
-import { NoAgentNotification } from "@/components/NoAgentNotification";
-import { CloseIcon } from "@/components/CloseIcon";
 import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
-import Visualizer from "@/components/Visualizer";
+import { AnimatePresence, motion } from "framer-motion";
+import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ConnectionDetails } from "./api/connection-details/route";
 
 export type ChatMessageType = {
   name: string;
