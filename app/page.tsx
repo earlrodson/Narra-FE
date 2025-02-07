@@ -16,7 +16,6 @@ import {
   useTrackTranscription,
   useVoiceAssistant,
 } from "@livekit/components-react";
-import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -116,8 +115,6 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
-  const [, setLoading] = useState(false);
-
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
       const currentDate = new Date();
@@ -144,7 +141,6 @@ function ControlBar(props: {
       // Handle the story as needed
     } catch (error) {
       console.error('Error generating story:', error);
-      setLoading(false);
     }
   }, []);
 
@@ -158,10 +154,10 @@ function ControlBar(props: {
    * Use Krisp background noise reduction when available.
    * Note: This is only available on Scale plan, see {@link https://livekit.io/pricing | LiveKit Pricing} for more details.
    */
-  const krisp = useKrispNoiseFilter();
-  useEffect(() => {
-    krisp.setNoiseFilterEnabled(true);
-  }, [krisp]);
+  // const krisp = useKrispNoiseFilter();
+  // useEffect(() => {
+  //   krisp.setNoiseFilterEnabled(true);
+  // }, []);
 
   return (
     <div className="relative h-[100px]">
@@ -310,34 +306,39 @@ function TranscriptionTile({
     participant: localParticipant.localParticipant,
   });
 
-  const [transcripts, ] = useState<Map<string, ChatMessageType>>(
+  const [transcripts, setTranscripts] = useState<Map<string, ChatMessageType>>(
     new Map()
   );
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
-  const { chatMessages, } = useChat();
+  const { chatMessages } = useChat();
 
   // store transcripts
   useEffect(() => {
-    agentMessages.segments.forEach((s) =>
-      transcripts.set(
-        s.id,
-        segmentToChatMessage(
-          s,
-          transcripts.get(s.id),
-          agentAudioTrack.participant
+    setTranscripts(() => {
+      const newTranscripts = new Map(transcripts);
+      agentMessages.segments.forEach((s) =>
+        newTranscripts.set(
+          s.id,
+          segmentToChatMessage(
+            s,
+            transcripts.get(s.id),
+            agentAudioTrack.participant
+          )
         )
-      )
-    );
-    localMessages.segments.forEach((s) =>
-      transcripts.set(
-        s.id,
-        segmentToChatMessage(
-          s,
-          transcripts.get(s.id),
-          localParticipant.localParticipant
+      );
+
+      localMessages.segments.forEach((s) =>
+        newTranscripts.set(
+          s.id,
+          segmentToChatMessage(
+            s,
+            transcripts.get(s.id),
+            localParticipant.localParticipant
+          )
         )
-      )
-    );
+      );
+      return newTranscripts;
+    })
 
     const allMessages = Array.from(transcripts.values());
 

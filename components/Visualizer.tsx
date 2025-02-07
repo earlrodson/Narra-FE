@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
 import {
   AgentState,
   TrackReferenceOrPlaceholder,
 } from "@livekit/components-react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface VisualizerProps {
   state: AgentState;
