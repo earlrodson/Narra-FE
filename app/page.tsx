@@ -429,7 +429,11 @@ function IframePage() {
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
+    console.log("IframePage mounted");
+    
     const receiveMessage = (event: MessageEvent<{ user?: User }>) => {
+      console.log("Message received:", event.data);
+      
       // ✅ Ensure the message is coming from the correct origin (Bubble app)
       if (event.origin !== "https://app.thymeandtell.com/version-41xfd/testing_page") return;
 
