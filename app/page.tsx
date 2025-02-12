@@ -28,6 +28,11 @@ export type ChatMessageType = {
   timestamp: number;
 };
 
+export interface User {
+  id: string;
+  email: string;
+}
+
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
@@ -69,6 +74,7 @@ export default function Page() {
       data-lk-theme="default"
       className="h-full grid content-center bg-white"
     >
+      <IframePage />
       <LiveKitRoom
         token={connectionDetails?.participantToken}
         serverUrl={connectionDetails?.serverUrl}
@@ -417,4 +423,39 @@ function segmentToChatMessage(
     timestamp: existingMessage?.timestamp ?? Date.now(),
   };
   return msg;
+}
+
+function IframePage() {
+  const [user, setUser] = useState<User | null>(null);
+  
+  useEffect(() => {
+    const receiveMessage = (event: MessageEvent<{ user?: User }>) => {
+      // ✅ Ensure the message is coming from the correct origin (Bubble app)
+      if (event.origin !== "https://app.thymeandtell.com/version-31smb/testing_page") return;
+
+      const { user } = event.data; // Extract user info from message
+
+      if (user && user.id && user.email) {
+        setUser(user);
+        console.log("User received:", user);
+      }
+    };
+
+    window.addEventListener("message", receiveMessage);
+
+    return () => {
+      window.removeEventListener("message", receiveMessage);
+    };
+  }, []);
+
+  return (
+    <div>
+      <h1>Next.js Iframe</h1>
+      {user ? (
+        <p>Logged-in User: {user.email} (ID: {user.id})</p>
+      ) : (
+        <p>Waiting for user data...</p>
+      )}
+    </div>
+  );
 }
