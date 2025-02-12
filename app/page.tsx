@@ -431,7 +431,7 @@ function IframePage() {
   useEffect(() => {
     const receiveMessage = (event: MessageEvent<{ user?: User }>) => {
       // ✅ Ensure the message is coming from the correct origin (Bubble app)
-      if (event.origin !== "https://app.thymeandtell.com/version-31smb/testing_page") return;
+      if (event.origin !== "https://app.thymeandtell.com/version-41xfd/testing_page") return;
 
       const { user } = event.data; // Extract user info from message
 
