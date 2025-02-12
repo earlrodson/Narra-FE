@@ -434,12 +434,9 @@ function IframePage() {
     const receiveMessage = (event: MessageEvent<{ user?: User }>) => {
       console.log("Message received:", event.data);
       
-      // ✅ Ensure the message is coming from the correct origin (Bubble app)
-      if (event.origin !== "https://app.thymeandtell.com/version-41xfd/testing_page") return;
-
       const { user } = event.data; // Extract user info from message
 
-      if (user && user.id && user.email) {
+      if (user && user.id) {
         setUser(user);
         console.log("User received:", user);
       }
