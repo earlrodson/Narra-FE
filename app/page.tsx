@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ConnectionDetails } from "./api/connection-details/route";
+import { useUser } from "./context/UserContext";
 
 export type ChatMessageType = {
   name: string;
@@ -28,12 +29,48 @@ export type ChatMessageType = {
   timestamp: number;
 };
 
+export interface User {
+  id: string;
+  email: string;
+  chapter: string;
+}
+const BACKEND_URL = process.env.BACKEND_URL;
+
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
   >(undefined);
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
   const [isAnimating, setIsAnimating] = useState(false);
+  const { user } = useUser();
+
+  // const [user, setUser] = useState<User | null>(null);
+
+  // const receiveMessage = (event: MessageEvent) => {
+  //   console.log("Message received:", event.data);
+    
+  //   if (event.origin !== "https://app.thymeandtell.com") return;
+    
+  //   const { user } = event.data;
+    
+  //   if (user) {
+  //     setUser(user);
+  //     console.log("User received:", user);
+  //   }
+  // };
+  // window.addEventListener("message", receiveMessage);
+  // useEffect(() => {
+  //   window.addEventListener("message", receiveMessage);
+  
+  //   return () => {
+  //     window.removeEventListener("message", receiveMessage, false);
+  //   };
+  // }, []);
+  
+  // useEffect(() => {
+  //   console.log("User state updated:", user);
+  // }, [user]);
+  
 
   const onConnectButtonClicked = useCallback(async () => {
     // Generate room connection details, including:
@@ -44,16 +81,18 @@ export default function Page() {
     //
     // In real-world application, you would likely allow the user to specify their
     // own participant name, and possibly to choose from existing rooms to join.
-
+    console.log('user',user);
+    
+    const baseUrl = window.location.origin; // Get the base URL of the current location
     const url = new URL(
-      process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ??
-      "/api/connection-details",
-      window.location.origin
+      `/api/connection-details?uid=${user?.id}&cid=${user?.chapter}`,
+      baseUrl
     );
+
     const response = await fetch(url.toString());
     const connectionDetailsData = await response.json();
     updateConnectionDetails(connectionDetailsData);
-  }, []);
+  }, [user]);
 
 
   const voiceAssistantComponentProps = {
@@ -115,11 +154,13 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
+  
+
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('.')[0];
-      const response = await fetch('http://localhost:8000/transcript/', {
+      const response = await fetch(`${BACKEND_URL}/transcript/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,7 +212,7 @@ function ControlBar(props: {
             className="uppercase absolute left-1/2 -translate-x-1/2 px-4 py-2 mt-20 bg-black text-white rounded-md"
             onClick={() => handleStartAConversationClicked()}
           >
-            Start a conversation
+            Start interview
           </motion.button>
         )}
       </AnimatePresence>
