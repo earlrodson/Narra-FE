@@ -3,7 +3,7 @@ import {
   AccessTokenOptions,
   VideoGrant,
 } from "livekit-server-sdk";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // NOTE: you are expected to define the following environment variables in `.env.local`:
 const API_KEY = process.env.LIVEKIT_API_KEY;
@@ -20,8 +20,18 @@ export type ConnectionDetails = {
   participantToken: string;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    console.log('searchParams:', searchParams);
+    
+    const uid = searchParams.get('uid') ? searchParams.get('uid') : `USERDEF${Math.floor(Math.random() * 10_000)}`;
+    const cid = searchParams.get('cid') ? searchParams.get('cid') : `CONVERSATIONDEF${Math.floor(Math.random() * 10_000)}`;
+    
+    if (!uid || !cid) {
+      throw new Error("Missing uid or cid parameter");
+    }
+
     if (LIVEKIT_URL === undefined) {
       throw new Error("LIVEKIT_URL is not defined");
     }
@@ -33,8 +43,8 @@ export async function GET() {
     }
 
     // Generate participant token
-    const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
-    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
+    const participantIdentity = `voice_assistant_user_${uid}_${cid}`;
+    const roomName = `voice_assistant_room_${uid}_${cid}`;
     const participantToken = await createParticipantToken(
       { identity: participantIdentity },
       roomName,
@@ -47,6 +57,9 @@ export async function GET() {
       participantToken: participantToken,
       participantName: participantIdentity,
     };
+
+    console.log('data:', data);
+    
     const headers = new Headers({
       "Cache-Control": "no-store",
     });
