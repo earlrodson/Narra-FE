@@ -19,7 +19,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ConnectionDetails } from "./api/connection-details/route";
+import type { ConnectionDetails } from "./api/v1/connection-details/route";
 import { useUser } from "./context/UserContext";
 
 export type ChatMessageType = {
@@ -44,34 +44,6 @@ export default function Page() {
   const [isAnimating, setIsAnimating] = useState(false);
   const { user } = useUser();
 
-  // const [user, setUser] = useState<User | null>(null);
-
-  // const receiveMessage = (event: MessageEvent) => {
-  //   console.log("Message received:", event.data);
-    
-  //   if (event.origin !== "https://app.thymeandtell.com") return;
-    
-  //   const { user } = event.data;
-    
-  //   if (user) {
-  //     setUser(user);
-  //     console.log("User received:", user);
-  //   }
-  // };
-  // window.addEventListener("message", receiveMessage);
-  // useEffect(() => {
-  //   window.addEventListener("message", receiveMessage);
-  
-  //   return () => {
-  //     window.removeEventListener("message", receiveMessage, false);
-  //   };
-  // }, []);
-  
-  // useEffect(() => {
-  //   console.log("User state updated:", user);
-  // }, [user]);
-  
-
   const onConnectButtonClicked = useCallback(async () => {
     // Generate room connection details, including:
     //   - A random Room name
@@ -85,7 +57,7 @@ export default function Page() {
     
     const baseUrl = window.location.origin; // Get the base URL of the current location
     const url = new URL(
-      `/api/connection-details?uid=${user?.id}&cid=${user?.chapter}`,
+      `/api/v1/connection-details?uid=${user?.id}&cid=${user?.chapter}`,
       baseUrl
     );
 
@@ -154,7 +126,6 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
-  
 
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {

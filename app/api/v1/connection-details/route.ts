@@ -23,7 +23,6 @@ export type ConnectionDetails = {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    console.log('searchParams:', searchParams);
     
     const uid = searchParams.get('uid') ? searchParams.get('uid') : `USERDEF${Math.floor(Math.random() * 10_000)}`;
     const cid = searchParams.get('cid') ? searchParams.get('cid') : `CONVERSATIONDEF${Math.floor(Math.random() * 10_000)}`;
@@ -50,6 +49,10 @@ export async function GET(request: NextRequest) {
       roomName,
     );
 
+    // remove room here
+    // const room = await createRoom(roomName);
+
+
     // Return connection details
     const data: ConnectionDetails = {
       serverUrl: LIVEKIT_URL,
@@ -58,8 +61,6 @@ export async function GET(request: NextRequest) {
       participantName: participantIdentity,
     };
 
-    console.log('data:', data);
-    
     const headers = new Headers({
       "Cache-Control": "no-store",
     });
