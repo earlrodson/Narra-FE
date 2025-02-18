@@ -53,11 +53,11 @@ export default function Page() {
     //
     // In real-world application, you would likely allow the user to specify their
     // own participant name, and possibly to choose from existing rooms to join.
-    console.log('user',user);
     
     const baseUrl = window.location.origin; // Get the base URL of the current location
+    
     const url = new URL(
-      `/api/v1/connection-details?uid=${user?.id}&cid=${user?.chapter}`,
+      user ? `/api/v1/connection-details?uid=${user?.id}&cid=${user?.chapter}` : `/api/v1/connection-details`,
       baseUrl
     );
 
@@ -120,12 +120,14 @@ function SimpleVoiceAssistant(props: {
   );
 }
 
+
 function ControlBar(props: {
   onConnectButtonClicked: () => void;
   agentState: AgentState;
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
+  const { user } = useUser();
 
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
@@ -137,10 +139,9 @@ function ControlBar(props: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "userRoomId": "room123",
-          "chapterId": 1,
+          "chapterId": user?.chapter,
           "transcript": JSON.stringify(roomTranscript),
-          "accountId": 42,
+          "accountId": user?.id,
           "timestamp": formattedDate
         }),
       });
@@ -236,10 +237,12 @@ function ControlBar(props: {
               exit={{ opacity: 0, top: "-10px" }}
               transition={{ duration: 0.4, ease: [0.09, 1.04, 0.245, 1.055] }}
               className="flex h-8 absolute left-1/2 -translate-x-1/2  justify-center"
-              onClick={() => storeTranscript(props.roomTranscript)}
+              onClick={() => {
+                console.log('triggered control');
+              }}
             >
               <VoiceAssistantControlBar controls={{ leave: false }} />
-              <DisconnectButton>
+              <DisconnectButton onClick={() => storeTranscript(props.roomTranscript)}>
                 <CloseIcon />
               </DisconnectButton>
             </motion.div>
@@ -326,66 +329,54 @@ function TranscriptionTile({
 
   // store transcripts
   useEffect(() => {
-    setTranscripts(() => {
-      const newTranscripts = new Map(transcripts);
+    setTranscripts((prevTranscripts) => {
+      const newTranscripts = new Map(prevTranscripts);
+  
       agentMessages.segments.forEach((s) =>
         newTranscripts.set(
           s.id,
-          segmentToChatMessage(
-            s,
-            transcripts.get(s.id),
-            agentAudioTrack.participant
-          )
+          segmentToChatMessage(s, prevTranscripts.get(s.id), agentAudioTrack.participant)
         )
       );
-
+  
       localMessages.segments.forEach((s) =>
         newTranscripts.set(
           s.id,
-          segmentToChatMessage(
-            s,
-            transcripts.get(s.id),
-            localParticipant.localParticipant
-          )
+          segmentToChatMessage(s, prevTranscripts.get(s.id), localParticipant.localParticipant)
         )
       );
+  
       return newTranscripts;
-    })
-
-    const allMessages = Array.from(transcripts.values());
-
-    for (const msg of chatMessages) {
-      const isAgent =
-        msg.from?.identity === agentAudioTrack.participant?.identity;
-      const isSelf =
-        msg.from?.identity === localParticipant.localParticipant.identity;
-      let name = msg.from?.name;
-      if (!name) {
-        if (isAgent) {
-          name = "Agent";
-        } else if (isSelf) {
-          name = "You";
-        } else {
-          name = "Unknown";
-        }
+    });
+  
+    setMessages(() => {
+      const allMessages = Array.from(transcripts.values());
+  
+      for (const msg of chatMessages) {
+        const isAgent = msg.from?.identity === agentAudioTrack.participant?.identity;
+        const isSelf = msg.from?.identity === localParticipant.localParticipant.identity;
+        const name = msg.from?.name ?? (isAgent ? "Agent" : isSelf ? "You" : "Unknown");
+  
+        allMessages.push({
+          name,
+          message: msg.message,
+          timestamp: msg.timestamp,
+          isSelf,
+        });
       }
-      allMessages.push({
-        name,
-        message: msg.message,
-        timestamp: msg.timestamp,
-        isSelf: isSelf,
-      });
-    }
-    allMessages.sort((a, b) => a.timestamp - b.timestamp);
-    setMessages(allMessages);
+  
+      return [...allMessages].sort((a, b) => a.timestamp - b.timestamp);
+    });
+  
   }, [
-    transcripts,
     chatMessages,
-    localParticipant.localParticipant,
     agentAudioTrack.participant,
+    localParticipant.localParticipant,
     agentMessages.segments,
     localMessages.segments,
   ]);
+  
+  
 
   useEffect(() => {
     // Assuming setRoomTranscript is passed from the parent
