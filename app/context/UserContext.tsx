@@ -17,6 +17,10 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<user | null>(null);
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const BUBBLE_VALIDATE_URL = process.env.NEXT_PUBLIC_BUBBLE_VALIDATE_URL;
+    console.log('BACKEND_URL, BUBBLE_VALIDATE_URL:', BACKEND_URL, BUBBLE_VALIDATE_URL);
+    
 
     return (
         <UserContext.Provider value={{ user, setUser }}>

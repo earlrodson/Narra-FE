@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    env: {
-        BACKEND_URL: process.env.BACKEND_URL,
-        BUBBLE_VALIDATE_URL: process.env.BUBBLE_VALIDATE_URL,
-    },
     async headers() {
         return [
             {

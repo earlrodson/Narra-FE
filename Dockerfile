@@ -21,7 +21,7 @@ COPY . .
 RUN if [ "$NODE_ENV" = "production" ]; then yarn build; fi
 
 # Expose the port Next.js runs on
-EXPOSE 4000
+# EXPOSE 4000
 
 # Start the frontend with the appropriate command based on NODE_ENV
 CMD if [ "$NODE_ENV" = "development" ]; then yarn dev; else yarn start; fi

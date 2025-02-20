@@ -19,8 +19,8 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ConnectionDetails } from "./api/v1/connection-details/route";
 import { useUser } from "./context/UserContext";
+import { ConnectionDetails } from "./api/v1/connection-details/route";
 
 export type ChatMessageType = {
   name: string;
@@ -34,7 +34,7 @@ export interface User {
   email: string;
   chapter: string;
 }
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
@@ -57,7 +57,7 @@ export default function Page() {
     const baseUrl = window.location.origin; // Get the base URL of the current location
     
     const url = new URL(
-      user ? `/api/v1/connection-details?uid=${user?.id}&cid=${user?.chapter}` : `/api/v1/connection-details`,
+      user ? `/web-api/v1/connection-details?uid=${user?.id}&cid=${user?.chapter}` : `/web-api/v1/connection-details`,
       baseUrl
     );
 
