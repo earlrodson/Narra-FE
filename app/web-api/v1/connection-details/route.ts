@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate participant token
-    const participantIdentity = `voice_assistant_user_${uid}_${cid}`;
-    const roomName = `voice_assistant_room_${uid}_${cid}`;
+    const participantIdentity = `narra_user_${Math.floor(Math.random() * 10_000)}_${uid}_${cid}`;
+    const roomName = `narra_room_${Math.floor(Math.random() * 10_000)}_${uid}_${cid}`;
     const participantToken = await createParticipantToken(
       { identity: participantIdentity },
       roomName,

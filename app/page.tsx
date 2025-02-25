@@ -20,7 +20,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUser } from "./context/UserContext";
-import { ConnectionDetails } from "./api/v1/connection-details/route";
+import { ConnectionDetails } from "./web-api/v1/connection-details/route";
 
 export type ChatMessageType = {
   name: string;
@@ -127,6 +127,39 @@ function ControlBar(props: {
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
+  
+  const [audioTrack, setAudioTrack] = useState<MediaStreamTrack | null>(null);
+
+  useEffect(() => {
+    let track: MediaStreamTrack | null = null; // Declare track inside useEffect
+
+    async function enableNoiseSuppression() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: true,
+          },
+        });
+
+        track = stream.getAudioTracks()[0];
+        setAudioTrack(track);
+
+        console.log('audioTrack:', audioTrack);
+        
+      } catch (error) {
+        console.error("Error enabling noise suppression:", error);
+      }
+    }
+
+    enableNoiseSuppression();
+
+    return () => {
+      if (track) track.stop(); // Clean up track when component unmounts
+    };
+  }, []); // ✅ No unnecessary dependencies
+
   const { user } = useUser();
 
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
@@ -161,16 +194,6 @@ function ControlBar(props: {
     props.onConnectButtonClicked();
     props.setIsAnimating(true);
   };
-
-
-  /**
-   * Use Krisp background noise reduction when available.
-   * Note: This is only available on Scale plan, see {@link https://livekit.io/pricing | LiveKit Pricing} for more details.
-   */
-  // const krisp = useKrispNoiseFilter();
-  // useEffect(() => {
-  //   krisp.setNoiseFilterEnabled(true);
-  // }, []);
 
   return (
     <div className="relative h-[100px]">
