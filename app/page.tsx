@@ -15,6 +15,7 @@ import {
   useLocalParticipant,
   useTrackTranscription,
   useVoiceAssistant,
+  // useRoomContext
 } from "@livekit/components-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LocalParticipant, MediaDeviceFailure, Participant, Track, TranscriptionSegment } from "livekit-client";
@@ -120,15 +121,14 @@ function SimpleVoiceAssistant(props: {
   );
 }
 
-
 function ControlBar(props: {
   onConnectButtonClicked: () => void;
   agentState: AgentState;
   roomTranscript: ChatMessageType[];
   setIsAnimating: (isAnimating: boolean) => void;
 }) {
-  
   const [audioTrack, setAudioTrack] = useState<MediaStreamTrack | null>(null);
+  const { user } = useUser();
 
   useEffect(() => {
     let track: MediaStreamTrack | null = null; // Declare track inside useEffect
@@ -159,8 +159,6 @@ function ControlBar(props: {
       if (track) track.stop(); // Clean up track when component unmounts
     };
   }, []); // ✅ No unnecessary dependencies
-
-  const { user } = useUser();
 
   const storeTranscript = useCallback(async (roomTranscript: ChatMessageType[]) => {
     try {
@@ -211,46 +209,6 @@ function ControlBar(props: {
           </motion.button>
         )}
       </AnimatePresence>
-
-      {/* Generate story button hidden for now */}
-      {/* <AnimatePresence>
-        {props.agentState === "disconnected" && props.roomTranscript.length > 1 && (
-          <motion.button
-            initial={{ opacity: 0, top: 50 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, top: "10px" }}
-            transition={{ duration: 1, ease: [0.09, 1.04, 0.245, 1.055] }}
-            className="bg-black uppercase absolute mt-[140px] left-1/2 -translate-x-1/2 rounded-md px-4 py-2 text-white "
-            onClick={() => generateStory(props.roomTranscript)}
-          >
-            Generate Story 
-						{loading && (
-							<div className="spinner absolute left-1/2 -translate-x-1/2 top-20">
-								<svg
-									className="animate-spin h-5 w-5 text-white"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<circle
-										className="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										strokeWidth="4"
-									></circle>
-									<path
-										className="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-									></path>
-								</svg>
-							</div>
-						)}
-          </motion.button>
-        )} 
-      </AnimatePresence> */}
       <AnimatePresence>
         {props.agentState !== "disconnected" &&
           props.agentState !== "connecting" && (
@@ -260,9 +218,6 @@ function ControlBar(props: {
               exit={{ opacity: 0, top: "-10px" }}
               transition={{ duration: 0.4, ease: [0.09, 1.04, 0.245, 1.055] }}
               className="flex h-8 absolute left-1/2 -translate-x-1/2  justify-center"
-              onClick={() => {
-                console.log('triggered control');
-              }}
             >
               <VoiceAssistantControlBar controls={{ leave: false }} />
               <DisconnectButton onClick={() => storeTranscript(props.roomTranscript)}>
@@ -271,6 +226,8 @@ function ControlBar(props: {
             </motion.div>
           )}
       </AnimatePresence>
+
+      <button></button>
     </div>
   );
 }
@@ -349,6 +306,7 @@ function TranscriptionTile({
   );
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const { chatMessages } = useChat();
+  // const room = useRoomContext();
 
   // store transcripts
   useEffect(() => {
@@ -388,9 +346,9 @@ function TranscriptionTile({
         });
       }
   
-      return [...allMessages].sort((a, b) => a.timestamp - b.timestamp);
+      return [...allMessages].sort((a, b) => b.timestamp - a.timestamp);
     });
-  
+    
   }, [
     chatMessages,
     agentAudioTrack.participant,
@@ -399,6 +357,31 @@ function TranscriptionTile({
     localMessages.segments,
   ]);
   
+  useEffect(() => {
+    // Detect if the user says goodbye
+    const goodbyePhrases = [
+      "bye", "goodbye", "see you", "got to go", "talk later", "talk soon", "see you later", 
+      "see you soon", "talk to you later", "talk to you soon", "see you next time", "talk to you next time", 
+      "talk to you soon", "talk to you later", "talk to you next time", "see you next time" ];
+    const lastMessage = messages[0]?.message.toLowerCase();
+    
+    if (lastMessage && goodbyePhrases.some(phrase => lastMessage.includes(phrase))) {
+      // get new messages from user
+      const userMessages = messages.filter((message) => message.name === 'You').slice(0, 3).map((message) => message.message).join(' ');
+      const agentMessages = messages.filter((message) => message.name === 'Agent').slice(0, 1).map((message) => message.message).join(' ');
+      // check agents response to user for a closing statement / call for api
+      const checkEndingData = checkEndingStatements(agentMessages, userMessages);
+      console.log("checkEndingData", checkEndingData);
+      
+      // const isEnding = checkEndingData.isEnding;
+      // if(isEnding) {
+      //   // after agent done telling the user, end the call
+      //   console.log("User said goodbye. Ending call...");
+      // }
+      
+      return;
+    }
+  }, [messages]);
   
 
   useEffect(() => {
@@ -442,3 +425,28 @@ function segmentToChatMessage(
   };
   return msg;
 }
+
+async function checkEndingStatements(agentMessage: string, userMessage: string) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/check/closing-statments/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "message": `${userMessage}, ${agentMessage}`,
+      }),
+    });
+
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    return response.json();
+    // Handle the story as needed
+  } catch (error) {
+    console.error('Error generating story:', error);
+  }
+}
+
